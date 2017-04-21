@@ -1,0 +1,29 @@
+- name: set authorized_keys
+  authorized_key:
+    user: "{{item.name}}"
+    key: "{{item.public_key}}"
+  with_items: "{{users | selectattr('public_key', 'defined') | list}}"
+  tags: ssh_setup
+
+- name: sshd_config
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^#?{{item.regexp}}"
+    line: "{{item.line}}"
+  with_items:
+    - regexp: PermitRootLogin
+      line: PermitRootLogin no
+    - regexp: PasswordAuthentication
+      line: PasswordAuthentication no
+    - regexp: ChallengeResponseAuthentication
+      line: ChallengeResponseAuthentication no
+    - regexp: UsePAM
+      line: UsePAM yes
+  notify: restart ssh
+  tags: ssh_setup
+
+- name: ufw allow ssh
+  ufw:
+    rule: allow
+    to_port: 22
+    proto: tcp

@@ -1,0 +1,3 @@
+ansible_python_interpreter: /usr/bin/python3
+python_path: /usr/bin/python3
+local_python_path: "{{lookup('pipe', 'which python3')}}"

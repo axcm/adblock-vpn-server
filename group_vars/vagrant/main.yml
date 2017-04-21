@@ -1,0 +1,4 @@
+users:
+  - name: vagrant
+    password: vagrant
+    public_key: "{{vagrant_public_key}}"

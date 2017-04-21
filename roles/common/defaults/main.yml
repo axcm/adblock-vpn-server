@@ -1,0 +1,6 @@
+users:
+  - name: ubuntu
+    password: ubuntu
+    public_key:
+
+closed_networks: []

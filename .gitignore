@@ -1,0 +1,3 @@
+.vagrant
+*.retry
+group_vars/*/secret.yml

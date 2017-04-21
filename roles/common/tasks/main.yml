@@ -1,0 +1,92 @@
+- name: wait for apt.systemd
+  shell: while true; do pgrep apt.systemd || break; sleep 5; done
+  changed_when: no
+
+- name: apt update
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: apt install aptitude
+  apt: name=aptitude
+
+- name: apt full-upgrade
+  apt: upgrade=full
+
+- name: kernel check
+  shell: test `dpkg -l | awk '{print $2}' | egrep "^linux-image-[0-9\.\-]+-generic$" | sed -r "s/linux-image-(([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)-generic)/\1 \2 \3 \4 \5/g" | awk '{printf "%02d%02d%02d%03d %s\n", $2, $3, $4, $5, $1}' | sort -n | tail -n 1 | awk '{print $2}'` != `uname -r`
+  register: kernel_check
+  changed_when: kernel_check.rc == 0
+  failed_when: kernel_check.stderr != ""
+
+
+### if:Kernel updated
+- name: reboot
+  shell: sleep 2 && shutdown -r now
+  async: 1
+  poll: 0
+  when: kernel_check.rc == 0
+
+- name: set local python path
+  set_fact:
+    ansible_python_interpreter: "{{local_python_path}}"
+  when: kernel_check.rc == 0
+
+- name: wait for SSH port up
+  local_action: wait_for host={{ansible_host}} port={{ansible_port}} delay=30
+  become: no
+  when: kernel_check.rc == 0
+
+- name: set remote python path
+  set_fact:
+    ansible_python_interpreter: "{{python_path}}"
+  when: kernel_check.rc == 0
+### fi
+
+
+- name: old kernels list
+  shell: dpkg -l | awk '{print $2}' | egrep "^linux-(image|headers)-[0-9\.\-]+(-generic)?$" | sed -r "s/linux-(image|headers)-([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)(-generic)?/\2 \3 \4 \5 \0/g" | awk '{printf "%02d%02d%02d%03d %s\n", $1, $2, $3, $4, $5}' | awk '{pkgs[$1] = pkgs[$1] $2 " "} END{for(ver in pkgs){print ver "," pkgs[ver]}}' | sed "s/ $//g" | sort -n | head -n -2 | awk -F , '{print $2}' | tr ' ' '\n' | egrep -v `uname -r | sed -r "s/([0-9\.\-]+)-generic/linux-(image|headers)-(\1)(-generic)?/g"`
+  register: old_kernels
+  changed_when: old_kernels.stdout != ""
+  failed_when: old_kernels.stderr != ""
+
+- name: purge old kernels
+  apt: name={{item}} purge=yes state=absent
+  with_items: "{{old_kernels.stdout_lines}}"
+
+- name: create users
+  user:
+    name: "{{item.name}}"
+    password: "{{item.password | password_hash('sha512')}}"
+  with_items: "{{users}}"
+  tags: ssh_setup
+
+- include: ssh.yml
+
+- name: ufw ipv6 disable
+  lineinfile:
+    dest: /etc/default/ufw
+    regexp: IPV6=
+    line: IPV6=no
+  notify: ufw reload
+
+- name: ufw custom rules
+  template:
+    dest: "/etc/ufw/{{item}}"
+    src: "{{item}}.j2"
+  with_items:
+    - before.rules
+    - after.rules
+  notify: ufw reload
+
+- name: ufw enable
+  ufw: state=enabled
+
+- name: PATH
+  shell: env | grep PATH | egrep -o "[^=]+$"
+  register: PATH
+  changed_when: no
+
+- name: cron PATH
+  cron:
+    name: PATH
+    env: yes
+    value: "{{PATH.stdout}}"
