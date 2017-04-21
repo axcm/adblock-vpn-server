@@ -1,4 +1,8 @@
 - hosts: server
   become: yes
+  vars:
+    closed_networks:
+      - "{{openvpn_server_network}}/{{openvpn_server_netmask}}"
+
   roles:
     - common
