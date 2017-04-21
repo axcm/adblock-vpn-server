@@ -2,3 +2,10 @@ users:
   - name: vagrant
     password: vagrant
     public_key: "{{vagrant_public_key}}"
+
+openvpn_server_network: 172.16.0.0
+openvpn_server_netmask: 255.255.0.0
+openvpn_server_dns: 172.16.0.1
+openvpn_server_auth_username: adblock
+openvpn_server_auth_password: adblock
+openvpn_client_conf: /etc/openvpn/adblock.ovpn

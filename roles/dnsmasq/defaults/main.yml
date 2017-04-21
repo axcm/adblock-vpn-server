@@ -1,7 +1,7 @@
 dnsmasq_addn_hosts: /etc/dnsmasq.hosts
 dnsmasq_local_ttl: 300
 dnsmasq_resolv_file: /etc/dnsmasq.resolv.conf
-dnsmasq_interface: []
+dnsmasq_except_interface: []
 dnsmasq_log_facility: /var/log/dnsmasq.log
 dnsmasq_resolv_dns:
   - 8.8.8.8
