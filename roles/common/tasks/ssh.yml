@@ -11,6 +11,8 @@
     regexp: "^#?{{item.regexp}}"
     line: "{{item.line}}"
   with_items:
+    - regexp: Port
+      line: "Port {{ssh_port}}"
     - regexp: PermitRootLogin
       line: PermitRootLogin no
     - regexp: PasswordAuthentication

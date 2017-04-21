@@ -4,3 +4,5 @@ users:
     public_key:
 
 closed_networks: []
+
+ssh_port: 22
