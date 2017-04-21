@@ -1,0 +1,10 @@
+domain-needed
+bogus-priv
+no-hosts
+addn-hosts={{dnsmasq_addn_hosts}}
+local-ttl={{dnsmasq_local_ttl}}
+resolv-file={{dnsmasq_resolv_file}}
+strict-order
+interface={{dnsmasq_interface | join(',')}}
+log-facility={{dnsmasq_log_facility}}
+log-queries

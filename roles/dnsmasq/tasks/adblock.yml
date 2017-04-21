@@ -1,0 +1,16 @@
+- name: /usr/local/bin/update-adblock
+  template:
+    src: update-adblock.j2
+    dest: /usr/local/bin/update-adblock
+    mode: 0755
+
+- name: update-adblock
+  shell: update-adblock
+
+- name: set update-adblock cron
+  cron:
+    name: Adblock
+    weekday: 0
+    hour: 0
+    minute: 0
+    job: "update-adblock"

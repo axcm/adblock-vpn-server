@@ -1,0 +1,46 @@
+#!/bin/sh
+
+if [ `id -u` != 0 ];then
+  exit 1
+fi
+
+TMP1=`tempfile -p adblock`
+TMP2=`tempfile -p adblock`
+trap "rm -f $TMP1 $TMP2" 0 2 15
+
+ADBLOCK_HOSTS_FILE_URLS="
+{% for item in dnsmasq_adblock_hosts_file_urls %}
+{{item}}
+{% endfor %}
+"
+
+INCLUSION_DOMAINS="
+{% for item in dnsmasq_adblock_inclusion_domains %}
+{{item}}
+{% endfor %}
+"
+
+EXCLUSION_DOMAINS="
+{% for item in dnsmasq_adblock_exclusion_domains %}
+{{item}}
+{% endfor %}
+"
+
+echo "$ADBLOCK_HOSTS_FILE_URLS" | xargs -I URL curl -L --retry 1 URL 2> /dev/null | \
+egrep "^127\.0\.0\.1 " | awk '{print $2}' > $TMP1
+
+echo "$INCLUSION_DOMAINS" >> $TMP1
+
+echo "$EXCLUSION_DOMAINS" | xargs -I DOMAIN sed -i "/DOMAIN/d" $TMP1
+
+sort $TMP1 | uniq | sed "/^$/d" > $TMP2
+
+rm -f $TMP1
+while read domain; do
+  echo "127.0.0.1 $domain" >> $TMP1
+  echo "::1 $domain" >> $TMP1
+done < $TMP2
+
+cp -f $TMP1 {{dnsmasq_addn_hosts}}
+chmod 0644 {{dnsmasq_addn_hosts}}
+systemctl reload dnsmasq.service > /dev/null

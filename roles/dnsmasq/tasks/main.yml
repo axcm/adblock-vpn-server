@@ -1,0 +1,41 @@
+- name: apt install dnsmasq
+  apt: name=dnsmasq
+
+- name: /etc/dnsmasq.conf
+  template:
+    src: dnsmasq.conf.j2
+    dest: /etc/dnsmasq.conf
+  notify: restart dnsmasq
+
+- name: "{{dnsmasq_resolv_file}}"
+  template:
+    src: resolv.conf.j2
+    dest: "{{dnsmasq_resolv_file}}"
+  notify: restart dnsmasq
+
+- name: dnsmasq config
+  lineinfile:
+    dest: /etc/default/dnsmasq
+    regexp: ^#?IGNORE_RESOLVCONF=yes
+    line: IGNORE_RESOLVCONF=yes
+  notify: restart dnsmasq
+
+- name: logrotate
+  logrotate:
+    name: dnsmasq
+    path: "{{dnsmasq_log_facility}}"
+    scripts:
+      postrotate: /bin/systemctl reload dnsmasq.service
+
+- name: ufw allow domain
+  ufw:
+    rule: allow
+    to_port: 53
+    proto: "{{item[0]}}"
+    from_ip: "{{item[1]}}"
+  with_nested:
+    - - tcp
+      - udp
+    - "{{closed_networks}}"
+
+- include: adblock.yml
