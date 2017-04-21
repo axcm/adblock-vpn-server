@@ -1,0 +1,33 @@
+remote {{openvpn_server_host}} {{openvpn_server_port}}
+proto {{openvpn_server_proto}}
+dev tun
+client
+
+cipher none
+auth-nocache
+
+nobind
+keepalive 10 120
+persist-key
+persist-tun
+comp-lzo
+
+#http-proxy [ip] [port]
+#http-proxy [ip] [port] stdin basic
+
+#user nobody
+#group nogroup
+
+key-direction 1
+<tls-auth>
+{{tls_auth_key.stdout}}
+</tls-auth>
+
+<auth-user-pass>
+{{openvpn_server_auth_username}}
+{{openvpn_server_auth_password}}
+</auth-user-pass>
+
+<ca>
+{{ca_cert.stdout}}
+</ca>

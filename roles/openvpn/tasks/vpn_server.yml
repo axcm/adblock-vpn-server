@@ -1,0 +1,14 @@
+- name: create server key
+  shell: "openssl genrsa -out {{openvpn_server_private_key}} 2048"
+
+- name: create server req
+  shell: "openssl req -new -key {{openvpn_server_private_key}} -sha256 -subj \"/C=JP/ST=/L=/O=/OU=/CN=VPN Server\""
+  register: server_req
+
+- name: sign server certificate
+  shell: "echo \"{{server_req.stdout}}\" | openssl ca -name VPN_CA -out {{openvpn_server_certificate}} -in /dev/stdin -md sha256 -days {{openvpn_server_days}} -batch -passin pass:{{openvpn_ca_pass}}"
+
+- name: read only private key
+  file:
+    path: "{{openvpn_server_private_key}}"
+    mode: 0600

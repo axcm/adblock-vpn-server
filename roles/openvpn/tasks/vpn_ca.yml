@@ -1,0 +1,54 @@
+- name: openssl config
+  blockinfile:
+    dest: /etc/ssl/openssl.cnf
+    block: |
+      [ VPN_CA ]
+      certs = {{openvpn_ca_certs}}
+      crl_dir = {{openvpn_ca_crl_dir}}
+      database = {{openvpn_ca_database}}
+      new_certs_dir = {{openvpn_ca_new_certs_dir}}
+      certificate = {{openvpn_ca_certificate}}
+      serial = {{openvpn_ca_serial}}
+      crlnumber = {{openvpn_ca_crlnumber}}
+      crl = {{openvpn_ca_crl}}
+      private_key = {{openvpn_ca_private_key}}
+      RANDFILE = {{openvpn_ca_RANDFILE}}
+      x509_extensions = {{openvpn_ca_x509_extensions}}
+      name_opt = {{openvpn_ca_name_opt}}
+      cert_opt = {{openvpn_ca_cert_opt}}
+      default_days = {{openvpn_ca_default_days}}
+      default_crl_days = {{openvpn_ca_default_crl_days}}
+      default_md = {{openvpn_ca_default_md}}
+      preserve = {{openvpn_ca_preserve}}
+      policy = {{openvpn_ca_policy}}
+
+- name: create CA directry
+  file:
+    state: directory
+    path: "{{item}}"
+  with_items:
+    - "{{openvpn_ca_dir}}"
+    - "{{openvpn_ca_certs}}"
+    - "{{openvpn_ca_crl_dir}}"
+    - "{{openvpn_ca_new_certs_dir}}"
+    - "{{openvpn_ca_private_key_dir}}"
+
+- name: create CA index
+  file:
+    state: touch
+    path: "{{openvpn_ca_database}}"
+
+- name: create req
+  shell: "openssl req -new -newkey rsa:2048 -passout pass:{{openvpn_ca_pass}} -keyout {{openvpn_ca_private_key}} -sha256 -subj \"/C=JP/ST=/L=/O=/OU=/CN=VPN CA\""
+  register: ca_req
+
+- name: sign ca cert
+  shell: "echo \"{{ca_req.stdout}}\" | openssl ca -in /dev/stdin -name VPN_CA -out {{openvpn_ca_certificate}} -create_serial -md sha256 -days {{openvpn_ca_days}} -batch -keyfile {{openvpn_ca_private_key}} -passin pass:{{openvpn_ca_pass}} -selfsign -extensions v3_ca"
+
+- name: crlnumber
+  shell: "cp {{openvpn_ca_serial}} {{openvpn_ca_crlnumber}}"
+
+- name: read only private key
+  file:
+    path: "{{openvpn_ca_private_key}}"
+    mode: 0600

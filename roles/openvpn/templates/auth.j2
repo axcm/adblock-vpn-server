@@ -1,0 +1,5 @@
+#!/bin/sh
+username=`head -1 $1`
+password=`tail -1 $1`
+
+test $username = {{openvpn_server_auth_username}} -a $password = {{openvpn_server_auth_password}}

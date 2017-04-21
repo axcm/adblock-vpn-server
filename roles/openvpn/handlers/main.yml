@@ -1,0 +1,7 @@
+- name: systemctl daemon-reload
+  # TODO: systemd: daemon_reload=yes で必要のないnameが要求される
+  # systemd: daemon-reload=yes
+  shell: systemctl daemon-reload
+
+- name: restart openvpn
+  service: name=openvpn state=restarted

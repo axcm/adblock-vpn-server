@@ -1,0 +1,80 @@
+- name: check vpn ca exists
+  stat:
+    path: "{{openvpn_ca_certificate}}"
+  register: vpn_ca_stat
+
+- name: check vpn server exists
+  stat:
+    path: "{{openvpn_server_certificate}}"
+  register: vpn_server_stat
+
+- include: vpn_ca.yml
+  when: not vpn_ca_stat.stat.exists
+
+- include: vpn_server.yml
+  when: not vpn_server_stat.stat.exists
+
+- name: apt install openvpn
+  apt: name=openvpn
+
+- name: create dhparam
+  shell: "openssl dhparam -out {{openvpn_server_dhparam}} 2048"
+  args:
+    creates: "{{openvpn_server_dhparam}}"
+
+- name: "read only dhparam"
+  file:
+    path: "{{openvpn_server_dhparam}}"
+    mode: 0600
+
+- name: create tls auth key
+  shell: "openvpn --genkey --secret {{openvpn_server_tls_auth}}"
+  args:
+    creates: "{{openvpn_server_tls_auth}}"
+
+- name: update crl
+  shell: "openssl ca -name VPN_CA -gencrl -out {{openvpn_ca_crl}} -passin pass:{{openvpn_ca_pass}}"
+
+- name: openvpn config
+  template:
+    dest: "{{openvpn_server_config}}"
+    src: "server.conf.j2"
+  notify:
+    - systemctl daemon-reload
+    - restart openvpn
+
+- name: openvpn auth
+  template:
+    dest: "{{openvpn_server_auth_user_pass_verify}}"
+    src: "auth.j2"
+    mode: 0755
+
+- name: logrotate
+  logrotate:
+    name: openvpn
+    path: "{{openvpn_server_log}}"
+    scripts:
+      postrotate: /bin/systemctl reload openvpn.service
+
+- name: ufw allow openvpn
+  ufw:
+    rule: allow
+    to_port: "{{openvpn_server_port}}"
+    proto: "{{openvpn_server_proto}}"
+
+- name: cat ca_certificate
+  shell: "cat {{openvpn_ca_certificate}}"
+  register: ca_cert
+  changed_when: no
+
+- name: cat tls_auth_key
+  shell: "cat {{openvpn_server_tls_auth}}"
+  register: tls_auth_key
+  changed_when: no
+
+- name: create client config
+  template:
+    dest: "{{openvpn_client_conf}}"
+    src: "client.ovpn.j2"
+    mode: 0600
+
