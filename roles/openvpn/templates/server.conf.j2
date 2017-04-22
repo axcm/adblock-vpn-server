@@ -7,13 +7,13 @@ cert {{openvpn_server_certificate}}
 key {{openvpn_server_private_key}}
 crl-verify {{openvpn_ca_crl}}
 dh {{openvpn_server_dhparam}}
+tls-auth {{openvpn_server_tls_auth}} 0
 
 server {{openvpn_server_network}} {{openvpn_server_netmask}}
 push "dhcp-option DNS {{openvpn_server_dns}}"
 
 auth-user-pass-verify {{openvpn_server_auth_user_pass_verify}} via-file
 client-cert-not-required
-tls-auth {{openvpn_server_tls_auth}} 0
 cipher none
 
 keepalive 10 120
