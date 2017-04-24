@@ -53,6 +53,14 @@
   logrotate:
     name: openvpn
     path: "{{openvpn_server_log}}"
+    options:
+      - weekly
+      - missingok
+      - rotate 8
+      - compress
+      - delaycompress
+      - copytruncate
+      - notifempty
     scripts:
       postrotate: /bin/systemctl reload openvpn.service
 
