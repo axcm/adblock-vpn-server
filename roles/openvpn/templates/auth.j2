@@ -2,4 +2,4 @@
 username=`head -1 $1`
 password=`tail -1 $1`
 
-test $username = {{openvpn_server_auth_username}} -a $password = {{openvpn_server_auth_password}}
+test $username = {{openvpn_server_auth_username}} -a $password = {{openvpn_server_auth_password}} {{openvpn_server_auth_extra_option}}

@@ -36,6 +36,7 @@ openvpn_server_dns: 8.8.8.8
 openvpn_server_auth_user_pass_verify: /etc/openvpn/auth
 openvpn_server_auth_username: user
 openvpn_server_auth_password: pass
+openvpn_server_auth_extra_option:
 openvpn_server_log: /var/log/openvpn.log
 openvpn_server_status: /var/log/openvpn_status.log
 openvpn_client_conf: /etc/openvpn/client.ovpn
