@@ -31,11 +31,9 @@
   ufw:
     rule: allow
     to_port: 53
-    proto: "{{item[0]}}"
-    from_ip: "{{item[1]}}"
-  with_nested:
-    - - tcp
-      - udp
-    - "{{closed_networks}}"
+    proto: "{{item}}"
+  with_items:
+    - tcp
+    - udp
 
 - include: adblock.yml
