@@ -27,7 +27,7 @@ EXCLUSION_DOMAINS="
 "
 
 echo "$ADBLOCK_HOSTS_FILE_URLS" | xargs -I URL curl -L --retry 1 URL 2> /dev/null | \
-egrep "^127\.0\.0\.1 " | awk '{print $2}' > $TMP1
+egrep "^(127\.0\.0\.1|0\.0\.0\.0) " | awk '{print $2}' > $TMP1
 
 echo "$INCLUSION_DOMAINS" >> $TMP1
 
