@@ -5,3 +5,4 @@ group_vars
 !group_vars/all.yml
 !group_vars/vagrant/main.yml
 production
+.idea
