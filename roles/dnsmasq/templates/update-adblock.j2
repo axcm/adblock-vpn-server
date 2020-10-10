@@ -33,7 +33,10 @@ echo "$INCLUSION_DOMAINS" >> $TMP1
 
 echo "$EXCLUSION_DOMAINS" | xargs -I DOMAIN sed -i "/DOMAIN/d" $TMP1
 
+echo "ALL HOST: `wc -l $TMP1`"
+
 sort $TMP1 | uniq | sed "/^$/d" > $TMP2
+echo "UNIQUE HOST: `wc -l $TMP2`"
 
 rm -f $TMP1
 while read domain; do
