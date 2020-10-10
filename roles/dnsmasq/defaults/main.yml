@@ -9,7 +9,10 @@ dnsmasq_resolv_dns:
 
 dnsmasq_adblock_hosts_file_urls:
   - https://warui.intaa.net/adhosts/hosts_lb.txt
-  - https://sites.google.com/site/hosts2ch/ja
   - https://raw.githubusercontent.com/multiverse2011/adawaylist-jp/master/hosts
+  - https://logroid.github.io/adaway-hosts/hosts_no_white.txt
+  - https://dns66.page.link/hosts
+  - https://280blocker.net/files/280blocker_domain.txt
+  - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts
 dnsmasq_adblock_inclusion_domains: []
 dnsmasq_adblock_exclusion_domains: []
