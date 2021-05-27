@@ -24,6 +24,13 @@
   notify: restart ssh
   tags: ssh_setup
 
+- name: "ufw deny from {{openvpn_server_network}}/{{openvpn_server_netmask}} to any port 22"
+  ufw:
+    rule: deny
+    to_port: 22
+    proto: tcp
+    from_ip: "{{openvpn_server_network}}/{{openvpn_server_netmask}}"
+
 - name: ufw allow ssh
   ufw:
     rule: allow
